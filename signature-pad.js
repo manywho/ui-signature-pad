@@ -44,14 +44,39 @@
 
             var model = manywho.model.getComponent(this.props.id, this.props.flowKey);
 
+            // Get the canvas a resize as appropriate by the author
+            var canvas = document.getElementById(this.props.id);
+            var height = 150;
+            var width = 255;
+
+            if (model.width > 0) {
+                width = model.width + 'px';
+            }
+
+            if (model.height > 0) {
+                height = model.height + 'px';
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
             // This references the following library:
             // https://github.com/szimek/signature_pad
-            var signaturePad = new SignaturePad(document.getElementById(this.props.id));
-            signaturePad.minWidth = getNumberAttribute(model.attributes, 'minWidth');
-            signaturePad.maxWidth = getNumberAttribute(model.attributes, 'maxWidth');
-            signaturePad.penColor = getStringAttribute(model.attributes, 'penColor');
+            var signaturePad = new SignaturePad(canvas);
 
-            signaturePad.onEnd(function () {
+            if (getNumberAttribute(model.attributes, 'minWidth') > 0) {
+                signaturePad.minWidth = getNumberAttribute(model.attributes, 'minWidth');
+            }
+
+            if (getNumberAttribute(model.attributes, 'maxWidth') > 0) {
+                signaturePad.maxWidth = getNumberAttribute(model.attributes, 'maxWidth');
+            }
+
+            if (getStringAttribute(model.attributes, 'penColor') != null) {
+                signaturePad.penColor = getStringAttribute(model.attributes, 'penColor');
+            }
+
+            signaturePad.onEnd = function () {
 
                 // do something when the user lifts their finger
                 var model = manywho.model.getComponent(id, flowKey);
@@ -59,7 +84,7 @@
                 manywho.state.setComponent(id, { contentValue: signaturePad.toDataURL() }, flowKey, true);
                 manywho.component.handleEvent(componentFunction, model, flowKey);
 
-            });
+            };
 
         },
 
@@ -67,6 +92,7 @@
 
             manywho.log.info('Rendering Signature Pad: ' + this.props.id);
 
+            var classes = manywho.styling.getClasses(this.props.parentId, this.props.id, "signature_pad", this.props.flowKey).join(' ');
             var model = manywho.model.getComponent(this.props.id, this.props.flowKey);
 
             if (model.isVisible == false) {
@@ -76,8 +102,7 @@
             }
 
             return React.DOM.canvas({
-                id: this.props.id,
-                style: { width: model.width + 'px', height: model.height + 'px' }
+                id: this.props.id
             });
 
         }
